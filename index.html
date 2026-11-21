@@ -207,10 +207,11 @@ $('#gp').onclick=()=>gift(-1);$('#gn').onclick=()=>gift(1);
 /* songs */
 let si=0,playing=false,t=0,dur=29,raf=0,last=0,au=null;
 const fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+["my.mp3","my2.mp3","my3.mp3"].forEach((f,i)=>{if(SONGS[i])SONGS[i].src=f});
 $('#tl').innerHTML=SONGS.map((s,i)=>`<button class="tr" data-i="${i}"><img src="${s.img}" alt=""><span>${s.t}</span><span class="eq"><i></i><i></i><i></i></span></button>`).join('');
 $$('.tr').forEach(b=>b.onclick=()=>{if(+b.dataset.i===si&&playing)pause();else{load(+b.dataset.i);play()}});
 function paint(){const p=dur?t/dur*100:0;$('#seek').style.background=`linear-gradient(to right,var(--pink) ${p}%,var(--track) ${p}%)`;$('#seek').value=t;$('#tc').textContent=fmt(t)}
-function load(i){stopSong();si=(i+SONGS.length)%SONGS.length;t=0;dur=29;au=null;if(SONGS[si].src){au=new Audio(SONGS[si].src);au.onloadedmetadata=()=>{dur=au.duration;$('#seek').max=dur;$('#td').textContent=fmt(dur);paint()};au.onended=()=>{load(si+1);play()}}
+function load(i){stopSong();si=(i+SONGS.length)%SONGS.length;t=0;dur=29;au=null;if(SONGS[si].src){au=new Audio(SONGS[si].src);au.onloadedmetadata=()=>{dur=au.duration;$('#seek').max=dur;$('#td').textContent=fmt(dur);paint()};au.onended=()=>{load(si+1);play()};au.onerror=()=>{au=null;dur=29;$('#seek').max=29;$('#td').textContent='0:29'}}
  $('#seek').max=dur;$('#td').textContent=fmt(dur);$('#cimg').src=SONGS[si].img;$('#ptitle').textContent=SONGS[si].t;$$('.tr').forEach((b,k)=>b.classList.toggle('on',k===si));paint()}
 function loop(n){if(!playing)return;if(au)t=au.currentTime;else{t+=(n-last)/1000;last=n;if(t>=dur){load(si+1);play();return}}paint();raf=requestAnimationFrame(loop)}
 function play(){playing=true;au&&au.play().catch(()=>{});last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);$('#pp').textContent='⏸';$('#pst').textContent='Now playing';$('#cov').classList.add('play');$$('.tr')[si].classList.add('pl')}
